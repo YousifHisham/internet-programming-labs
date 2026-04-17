@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Lab 7 Report – Mini-Twitter Backend</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: "Times New Roman", serif; font-size: 12pt; color: #000; background: #fff; }
+    .page { width: 210mm; min-height: 297mm; margin: 0 auto; padding: 25mm 25mm 20mm 30mm; }
+
+    /* Cover */
+    .cover { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 297mm; text-align: center; border-bottom: 2px solid #000; }
+    .cover .university { font-size: 16pt; font-weight: bold; margin-bottom: 6px; }
+    .cover .faculty    { font-size: 13pt; margin-bottom: 40px; }
+    .cover .title      { font-size: 22pt; font-weight: bold; margin-bottom: 10px; }
+    .cover .subtitle   { font-size: 14pt; margin-bottom: 50px; }
+    .cover table       { border-collapse: collapse; width: 70%; margin: 0 auto; }
+    .cover td          { padding: 8px 16px; font-size: 12pt; }
+    .cover td:first-child { font-weight: bold; text-align: right; padding-right: 20px; }
+    .cover .date       { margin-top: 50px; font-size: 12pt; }
+
+    /* Body */
+    h1 { font-size: 16pt; font-weight: bold; margin: 28px 0 10px; border-bottom: 1px solid #000; padding-bottom: 4px; }
+    h2 { font-size: 13pt; font-weight: bold; margin: 20px 0 8px; }
+    h3 { font-size: 12pt; font-weight: bold; margin: 14px 0 6px; }
+    p  { margin-bottom: 10px; line-height: 1.6; text-align: justify; }
+    ul, ol { margin: 8px 0 10px 24px; line-height: 1.7; }
+
+    /* Code */
+    pre  { background: #f4f4f4; border: 1px solid #ccc; border-radius: 4px; padding: 12px 14px; font-family: "Courier New", monospace; font-size: 9.5pt; line-height: 1.5; overflow-x: auto; margin: 10px 0 14px; white-space: pre-wrap; }
+    code { font-family: "Courier New", monospace; font-size: 9.5pt; background: #f4f4f4; padding: 1px 4px; border-radius: 2px; }
+
+    /* Tables */
+    table.api { width: 100%; border-collapse: collapse; margin: 12px 0 16px; font-size: 11pt; }
+    table.api th { background: #222; color: #fff; padding: 8px 10px; text-align: left; }
+    table.api td { border: 1px solid #bbb; padding: 7px 10px; vertical-align: top; }
+    table.api tr:nth-child(even) td { background: #f9f9f9; }
+
+    /* Screenshot placeholder */
+    .screenshot {
+      border: 2px dashed #888;
+      border-radius: 6px;
+      background: #fafafa;
+      text-align: center;
+      padding: 40px 20px;
+      margin: 14px 0 20px;
+      color: #555;
+      font-style: italic;
+      font-size: 11pt;
+    }
+    .screenshot span { display: block; font-size: 18pt; margin-bottom: 8px; color: #aaa; }
+
+    @media print {
+      .page { margin: 0; padding: 20mm 20mm 18mm 25mm; }
+      pre { page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════  COVER PAGE  ═══════════════════════════ -->
+<div class="page cover">
+  <div class="university">Ain Shams University</div>
+  <div class="faculty">Faculty of Engineering – Computer &amp; Systems Engineering</div>
+
+  <div style="margin: 40px 0 20px;">
+    <div class="title">Lab 7 Report</div>
+    <div class="subtitle">Mini-Twitter Backend Implementation &amp; API Testing</div>
+    <div style="font-size:12pt; margin-top:8px;">Course: Internet Programming – CSE341</div>
+  </div>
+
+  <table>
+    <tr><td>Student Name:</td><td>Yousif</td></tr>
+    <tr><td>Student ID:</td><td>22P0008</td></tr>
+    <tr><td>Section:</td><td>___________</td></tr>
+    <tr><td>Instructor:</td><td>___________</td></tr>
+  </table>
+
+  <div class="date">Academic Year 2025 – 2026 &nbsp;|&nbsp; Spring Semester</div>
+</div>
+
+<!-- ═══════════════════════════  REPORT BODY  ═══════════════════════════ -->
+<div class="page">
+
+  <!-- 1. Introduction -->
+  <h1>1. Introduction</h1>
+  <p>
+    This report documents the implementation of a RESTful backend server for the Mini-Twitter application,
+    developed as part of Lab 7 of the Internet Programming course (CSE341). The objective was to build a
+    functional HTTP server using <strong>Node.js</strong> and <strong>Express.js</strong> that exposes a
+    REST API designed in the previous lab (Lab 6), and to connect it to a provided React frontend.
+  </p>
+  <p>
+    Data is stored in-memory using JavaScript arrays, as required by the lab specification. The server was
+    tested using a <strong>Postman collection</strong> run via the Newman CLI runner.
+  </p>
+
+  <!-- 2. Tools & Technologies -->
+  <h1>2. Tools &amp; Technologies</h1>
+  <ul>
+    <li><strong>Node.js</strong> – JavaScript runtime for executing server-side code</li>
+    <li><strong>Express.js</strong> – Web framework for defining HTTP routes and middleware</li>
+    <li><strong>React + Vite</strong> – Frontend provided by the lab (repository: <code>mina58/lab-8-web</code>)</li>
+    <li><strong>Postman / Newman</strong> – API design and automated endpoint testing</li>
+    <li><strong>npm</strong> – Package manager used to initialise the project and install dependencies</li>
+  </ul>
+
+  <!-- 3. API Design -->
+  <h1>3. API Design</h1>
+  <p>
+    The API was designed in Lab 6 using a Postman mock server. It follows REST conventions and supports
+    the following operations: creating posts, reading posts, editing posts, deleting posts, adding comments,
+    and reading comments.
+  </p>
+
+  <table class="api">
+    <tr>
+      <th>Method</th><th>Endpoint</th><th>Description</th><th>Request Body</th><th>Response</th>
+    </tr>
+    <tr>
+      <td>GET</td><td><code>/posts</code></td><td>Get all posts</td><td>—</td><td>Array of post objects</td>
+    </tr>
+    <tr>
+      <td>POST</td><td><code>/posts</code></td><td>Create a new post</td>
+      <td><code>{ name, content }</code></td><td>201 – Created post</td>
+    </tr>
+    <tr>
+      <td>GET</td><td><code>/posts/:id</code></td><td>Get a single post</td><td>—</td><td>Post object</td>
+    </tr>
+    <tr>
+      <td>PUT</td><td><code>/posts/:id</code></td><td>Edit a post</td>
+      <td><code>{ name?, content? }</code></td><td>Updated post object</td>
+    </tr>
+    <tr>
+      <td>DELETE</td><td><code>/posts/:id</code></td><td>Delete a post</td><td>—</td><td>204 No Content</td>
+    </tr>
+    <tr>
+      <td>GET</td><td><code>/posts/:id/comments</code></td><td>Get all comments on a post</td>
+      <td>—</td><td>Array of comment strings</td>
+    </tr>
+    <tr>
+      <td>POST</td><td><code>/posts/:id/comments</code></td><td>Add a comment to a post</td>
+      <td><code>{ text }</code></td><td>201 – Created comment</td>
+    </tr>
+  </table>
+
+  <!-- 4. Implementation -->
+  <h1>4. Implementation</h1>
+
+  <h2>4.1 Project Setup</h2>
+  <p>The project was initialised with npm and Express was installed as the only dependency:</p>
+  <pre>npm init -y
+npm install express</pre>
+
+  <h2>4.2 Server Code (<code>server.js</code>)</h2>
+  <p>
+    The server uses an in-memory array (<code>posts</code>) as the data store. Each post object contains
+    an <code>id</code>, <code>name</code>, <code>content</code>, and a nested <code>comments</code> array.
+    A CORS middleware header is added so the React frontend (running on port 5173) can communicate with
+    the backend (running on port 4000).
+  </p>
+
+  <pre>const express = require("express");
+const app = express();
+app.use(express.json());
+
+// CORS – allow requests from the React frontend
+app.use((req, res, next) => {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    next();
+});
+
+let posts = [];
+let nextPostId = 1;
+let nextCommentId = 1;
+
+// GET /posts
+app.get("/posts", (req, res) => {
+    res.json(posts.map(({ comments, ...post }) => post));
+});
+
+// POST /posts
+app.post("/posts", (req, res) => {
+    const { name, content } = req.body;
+    const post = { id: nextPostId++, name, content, comments: [] };
+    posts.push(post);
+    res.status(201).json({ id: post.id, name: post.name, content: post.content });
+});
+
+// GET /posts/:id
+app.get("/posts/:id", (req, res) => {
+    const post = posts.find(p => p.id === parseInt(req.params.id));
+    if (!post) return res.status(404).json({ error: "Post not found" });
+    res.json({ id: post.id, name: post.name, content: post.content });
+});
+
+// PUT /posts/:id
+app.put("/posts/:id", (req, res) => {
+    const post = posts.find(p => p.id === parseInt(req.params.id));
+    if (!post) return res.status(404).json({ error: "Post not found" });
+    if (req.body.name) post.name = req.body.name;
+    if (req.body.content) post.content = req.body.content;
+    res.json({ id: post.id, name: post.name, content: post.content });
+});
+
+// DELETE /posts/:id
+app.delete("/posts/:id", (req, res) => {
+    const index = posts.findIndex(p => p.id === parseInt(req.params.id));
+    if (index === -1) return res.status(404).json({ error: "Post not found" });
+    posts.splice(index, 1);
+    res.status(204).end();
+});
+
+// GET /posts/:id/comments
+app.get("/posts/:id/comments", (req, res) => {
+    const post = posts.find(p => p.id === parseInt(req.params.id));
+    if (!post) return res.status(404).json({ error: "Post not found" });
+    res.json(post.comments.map(c => c.text));
+});
+
+// POST /posts/:id/comments
+app.post("/posts/:id/comments", (req, res) => {
+    const post = posts.find(p => p.id === parseInt(req.params.id));
+    if (!post) return res.status(404).json({ error: "Post not found" });
+    const comment = { id: nextCommentId++, text: req.body.text };
+    post.comments.push(comment);
+    res.status(201).json(comment);
+});
+
+app.listen(4000, () => console.log("Server running on http://localhost:4000"));</pre>
+
+  <h2>4.3 Frontend Integration (<code>api.js</code>)</h2>
+  <p>
+    The provided React frontend contained stub functions in <code>src/api/api.js</code>. These were
+    implemented using <code>async/await</code> with the browser's <code>fetch()</code> API, pointing
+    to the local Express backend instead of the Postman mock server.
+  </p>
+  <p>
+    One notable transformation: the <code>NewCommentForm</code> component passes
+    <code>{ comment: "..." }</code> to <code>createNewComment</code>, which is remapped to
+    <code>{ text: "..." }</code> before being sent to the server to match the API specification.
+  </p>
+
+  <pre>const BASE_URL = "http://localhost:4000";
+
+export const getAllPosts = async () => {
+  try {
+    const response = await fetch(`${BASE_URL}/posts`);
+    if (!response.ok) throw new Error(`Failed to fetch posts: ${response.statusText}`);
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching posts:", error);
+    return [];
+  }
+};
+
+export const getPostDetails = async (postId) => {
+  try {
+    const postResponse = await fetch(`${BASE_URL}/posts/${postId}`);
+    if (!postResponse.ok) throw new Error(`Failed to fetch post: ${postResponse.statusText}`);
+    const post = await postResponse.json();
+
+    const commentsResponse = await fetch(`${BASE_URL}/posts/${postId}/comments`);
+    if (!commentsResponse.ok) throw new Error(`Failed to fetch comments: ${commentsResponse.statusText}`);
+    const comments = await commentsResponse.json();
+
+    return { post, comments };
+  } catch (error) {
+    console.error("Error fetching post details:", error);
+    return { post: null, comments: [] };
+  }
+};
+
+export const createNewPost = async (newPostData) => {
+  try {
+    const response = await fetch(`${BASE_URL}/posts`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newPostData),
+    });
+    if (!response.ok) throw new Error(`Failed to create post: ${response.statusText}`);
+    return await response.json();
+  } catch (error) {
+    console.error("Error creating post:", error);
+  }
+};
+
+export const createNewComment = async (postId, newCommentData) => {
+  try {
+    const response = await fetch(`${BASE_URL}/posts/${postId}/comments`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: newCommentData.comment }),
+    });
+    if (!response.ok) throw new Error(`Failed to create comment: ${response.statusText}`);
+    return await response.json();
+  } catch (error) {
+    console.error("Error creating comment:", error);
+  }
+};</pre>
+
+  <!-- 5. Testing -->
+  <h1>5. API Testing with Postman</h1>
+  <p>
+    A Postman collection (<code>lab7-collection.postman_collection.json</code>) was created containing
+    10 requests that cover all endpoints. Each request includes automated test scripts that verify the
+    HTTP status code and the response body. The collection uses <strong>collection variables</strong>
+    (<code>postId</code>, <code>secondPostId</code>) to pass IDs dynamically between requests,
+    making the suite repeatable regardless of server state.
+  </p>
+  <p>
+    The collection was executed using the <strong>Newman</strong> CLI runner, producing the results
+    shown below.
+  </p>
+
+  <h2>5.1 Test Summary</h2>
+  <table class="api">
+    <tr><th>#</th><th>Request</th><th>Method</th><th>Expected Status</th><th>Assertions</th></tr>
+    <tr><td>1</td><td>GET /posts (empty)</td><td>GET</td><td>200</td><td>Status 200, empty array</td></tr>
+    <tr><td>2</td><td>POST /posts – first post</td><td>POST</td><td>201</td><td>Status 201, id/name/content present</td></tr>
+    <tr><td>3</td><td>POST /posts – second post</td><td>POST</td><td>201</td><td>Status 201, name correct</td></tr>
+    <tr><td>4</td><td>GET /posts (2 posts)</td><td>GET</td><td>200</td><td>Array length 2, no comments field</td></tr>
+    <tr><td>5</td><td>GET /posts/:id</td><td>GET</td><td>200</td><td>Correct name and content returned</td></tr>
+    <tr><td>6</td><td>GET /posts/:id/comments (empty)</td><td>GET</td><td>200</td><td>Empty array</td></tr>
+    <tr><td>7</td><td>POST /posts/:id/comments – first</td><td>POST</td><td>201</td><td>Comment text correct</td></tr>
+    <tr><td>8</td><td>POST /posts/:id/comments – second</td><td>POST</td><td>201</td><td>Comment text correct</td></tr>
+    <tr><td>9</td><td>GET /posts/:id/comments (2)</td><td>GET</td><td>200</td><td>Array of 2 strings, correct values</td></tr>
+    <tr><td>10</td><td>GET /posts/999 (not found)</td><td>GET</td><td>404</td><td>Error property present</td></tr>
+  </table>
+
+  <h2>5.2 Newman Run Results</h2>
+  <p>All 21 assertions passed with 0 failures across 10 requests:</p>
+
+  <div class="screenshot">
+    <span>📸</span>
+    <strong>[Screenshot – Newman terminal output showing all 10 requests passing]</strong><br/>
+    Insert a screenshot of the Newman CLI output here
+  </div>
+
+  <h2>5.3 Postman Screenshots</h2>
+
+  <h3>GET /posts – Retrieve All Posts</h3>
+  <div class="screenshot">
+    <span>📸</span>
+    <strong>[Screenshot – GET /posts response in Postman]</strong><br/>
+    Shows the list of posts returned as a JSON array
+  </div>
+
+  <h3>POST /posts – Create a New Post</h3>
+  <div class="screenshot">
+    <span>📸</span>
+    <strong>[Screenshot – POST /posts request and 201 response in Postman]</strong><br/>
+    Shows the request body <code>{ "name": "Hello", "content": "..." }</code> and the created post response
+  </div>
+
+  <h3>GET /posts/:id – Get Single Post</h3>
+  <div class="screenshot">
+    <span>📸</span>
+    <strong>[Screenshot – GET /posts/1 response in Postman]</strong><br/>
+    Shows the individual post object returned
+  </div>
+
+  <h3>PUT /posts/:id – Edit a Post</h3>
+  <div class="screenshot">
+    <span>📸</span>
+    <strong>[Screenshot – PUT /posts/1 request and updated response in Postman]</strong><br/>
+    Shows the updated name/content fields in the response
+  </div>
+
+  <h3>POST /posts/:id/comments – Add a Comment</h3>
+  <div class="screenshot">
+    <span>📸</span>
+    <strong>[Screenshot – POST /posts/1/comments request and 201 response in Postman]</strong><br/>
+    Shows the comment body <code>{ "text": "..." }</code> and the created comment response
+  </div>
+
+  <h3>GET /posts/:id/comments – Get Comments</h3>
+  <div class="screenshot">
+    <span>📸</span>
+    <strong>[Screenshot – GET /posts/1/comments response in Postman]</strong><br/>
+    Shows the array of comment strings
+  </div>
+
+  <h3>DELETE /posts/:id – Delete a Post</h3>
+  <div class="screenshot">
+    <span>📸</span>
+    <strong>[Screenshot – DELETE /posts/2 returning 204 No Content in Postman]</strong>
+  </div>
+
+  <!-- 6. Frontend Integration -->
+  <h1>6. Frontend Integration</h1>
+  <p>
+    The React frontend was cloned from the <code>mina58/lab-8-web</code> repository and run using Vite.
+    After implementing <code>api.js</code> and starting both servers, the app was accessible at
+    <code>http://localhost:5173</code>.
+  </p>
+
+  <h3>Application Home – Post List</h3>
+  <div class="screenshot">
+    <span>📸</span>
+    <strong>[Screenshot – Mini-Twitter app running in the browser, showing the post list and create-post form]</strong>
+  </div>
+
+  <h3>Post Detail View – Comments</h3>
+  <div class="screenshot">
+    <span>📸</span>
+    <strong>[Screenshot – Single post detail view showing comments and the add-comment form]</strong>
+  </div>
+
+  <!-- 7. Conclusion -->
+  <h1>7. Conclusion</h1>
+  <p>
+    This lab demonstrated how to build a RESTful backend server using Node.js and Express.js. A
+    seven-endpoint API was implemented for a Mini-Twitter application supporting full CRUD on posts and
+    comment creation and retrieval. The backend was integrated with a React frontend by implementing the
+    <code>fetch</code>-based API functions using <code>async/await</code>. All endpoints were
+    verified through an automated Postman collection with 21 passing assertions.
+  </p>
+  <p>
+    Key concepts practised: REST API design, HTTP methods and status codes, Express routing, middleware
+    (JSON body parsing, CORS), in-memory data storage, and asynchronous JavaScript with
+    <code>async/await</code>.
+  </p>
+
+</div>
+</body>
+</html>

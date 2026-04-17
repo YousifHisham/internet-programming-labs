@@ -1,0 +1,532 @@
+{
+  "info": {
+    "name": "Lab 7 - Mini Twitter API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:4000"
+    },
+    {
+      "key": "postId",
+      "value": ""
+    },
+    {
+      "key": "secondPostId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "1. GET /posts (empty)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+              "pm.test('Returns empty array', () => {",
+              "  pm.expect(pm.response.json()).to.be.an('array').that.is.empty;",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/posts"
+      }
+    },
+    {
+      "name": "2. POST /posts - create first post",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 201', () => pm.response.to.have.status(201));",
+              "pm.test('Post has id, name, content', () => {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body).to.have.property('id');",
+              "  pm.expect(body.name).to.eql('Hello');",
+              "  pm.expect(body.content).to.eql('I am making a rest api');",
+              "  pm.collectionVariables.set('postId', body.id);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Hello\",\n  \"content\": \"I am making a rest api\"\n}"
+        },
+        "url": "{{baseUrl}}/posts"
+      }
+    },
+    {
+      "name": "3. POST /posts - create second post",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 201', () => pm.response.to.have.status(201));",
+              "pm.test('Second post created', () => {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body.name).to.eql('Hi');",
+              "  pm.collectionVariables.set('secondPostId', body.id);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Hi\",\n  \"content\": \"I am creating a web application\"\n}"
+        },
+        "url": "{{baseUrl}}/posts"
+      }
+    },
+    {
+      "name": "4. GET /posts (has 2 posts, no comments field)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+              "pm.test('Has 2 posts', () => {",
+              "  pm.expect(pm.response.json()).to.have.lengthOf(2);",
+              "});",
+              "pm.test('Posts do not expose comments array', () => {",
+              "  pm.response.json().forEach(p => pm.expect(p).to.not.have.property('comments'));",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/posts"
+      }
+    },
+    {
+      "name": "5. GET /posts/:id - get single post",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+              "pm.test('Returns correct post', () => {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body.name).to.eql('Hello');",
+              "  pm.expect(body.content).to.eql('I am making a rest api');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/posts/{{postId}}"
+      }
+    },
+    {
+      "name": "6. GET /posts/:id/comments (empty)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+              "pm.test('Returns empty array', () => {",
+              "  pm.expect(pm.response.json()).to.be.an('array').that.is.empty;",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/posts/{{postId}}/comments"
+      }
+    },
+    {
+      "name": "7. POST /posts/:id/comments - add comment",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 201', () => pm.response.to.have.status(201));",
+              "pm.test('Comment returned', () => {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body.text).to.eql('This is a great start!');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"text\": \"This is a great start!\"\n}"
+        },
+        "url": "{{baseUrl}}/posts/{{postId}}/comments"
+      }
+    },
+    {
+      "name": "8. POST /posts/:id/comments - add second comment",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 201', () => pm.response.to.have.status(201));",
+              "pm.test('Second comment returned', () => {",
+              "  pm.expect(pm.response.json().text).to.eql('Keep up the good work!');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"text\": \"Keep up the good work!\"\n}"
+        },
+        "url": "{{baseUrl}}/posts/{{postId}}/comments"
+      }
+    },
+    {
+      "name": "9. GET /posts/:id/comments (has 2, returns strings)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+              "pm.test('Has 2 comments as strings', () => {",
+              "  const comments = pm.response.json();",
+              "  pm.expect(comments).to.have.lengthOf(2);",
+              "  pm.expect(comments[0]).to.eql('This is a great start!');",
+              "  pm.expect(comments[1]).to.eql('Keep up the good work!');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/posts/{{postId}}/comments"
+      }
+    },
+    {
+      "name": "10. GET /posts/999 - not found",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 404', () => pm.response.to.have.status(404));",
+              "pm.test('Error message returned', () => {",
+              "  pm.expect(pm.response.json()).to.have.property('error');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/posts/999"
+      }
+    },
+    {
+      "name": "11. PUT /posts/:id - update first post",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+              "pm.test('Updated post values are returned', () => {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body.id).to.eql(Number(pm.collectionVariables.get('postId')));",
+              "  pm.expect(body.name).to.eql('Hello (edited)');",
+              "  pm.expect(body.content).to.eql('I updated this post content');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Hello (edited)\",\n  \"content\": \"I updated this post content\"\n}"
+        },
+        "url": "{{baseUrl}}/posts/{{postId}}"
+      }
+    },
+    {
+      "name": "12. GET /posts/:id - verify updated post",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+              "pm.test('Updated values persist', () => {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body.name).to.eql('Hello (edited)');",
+              "  pm.expect(body.content).to.eql('I updated this post content');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/posts/{{postId}}"
+      }
+    },
+    {
+      "name": "13. PUT /posts/999 - not found",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 404', () => pm.response.to.have.status(404));",
+              "pm.test('Error message is Post not found', () => {",
+              "  pm.expect(pm.response.json().error).to.eql('Post not found');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Nope\"\n}"
+        },
+        "url": "{{baseUrl}}/posts/999"
+      }
+    },
+    {
+      "name": "14. DELETE /posts/:id - delete second post",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 204', () => pm.response.to.have.status(204));",
+              "pm.test('Response body is empty', () => {",
+              "  pm.expect(pm.response.text()).to.eql('');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/posts/{{secondPostId}}"
+      }
+    },
+    {
+      "name": "15. GET /posts - after deleting second post",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+              "pm.test('Only first post remains', () => {",
+              "  const posts = pm.response.json();",
+              "  pm.expect(posts).to.have.lengthOf(1);",
+              "  pm.expect(posts[0].id).to.eql(Number(pm.collectionVariables.get('postId')));",
+              "  pm.expect(posts[0].name).to.eql('Hello (edited)');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/posts"
+      }
+    },
+    {
+      "name": "16. DELETE /posts/:id - already deleted post",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 404', () => pm.response.to.have.status(404));",
+              "pm.test('Error message is Post not found', () => {",
+              "  pm.expect(pm.response.json().error).to.eql('Post not found');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/posts/{{secondPostId}}"
+      }
+    },
+    {
+      "name": "17. GET /posts/:deletedId - not found",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 404', () => pm.response.to.have.status(404));",
+              "pm.test('Error message is Post not found', () => {",
+              "  pm.expect(pm.response.json().error).to.eql('Post not found');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/posts/{{secondPostId}}"
+      }
+    },
+    {
+      "name": "18. GET /posts/999/comments - not found",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 404', () => pm.response.to.have.status(404));",
+              "pm.test('Error message is Post not found', () => {",
+              "  pm.expect(pm.response.json().error).to.eql('Post not found');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/posts/999/comments"
+      }
+    },
+    {
+      "name": "19. POST /posts/999/comments - not found",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 404', () => pm.response.to.have.status(404));",
+              "pm.test('Error message is Post not found', () => {",
+              "  pm.expect(pm.response.json().error).to.eql('Post not found');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"text\": \"Comment on missing post\"\n}"
+        },
+        "url": "{{baseUrl}}/posts/999/comments"
+      }
+    },
+    {
+      "name": "20. DELETE /posts/:id - delete first post",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 204', () => pm.response.to.have.status(204));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/posts/{{postId}}"
+      }
+    },
+    {
+      "name": "21. GET /posts - back to empty list",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+              "pm.test('Returns empty array again', () => {",
+              "  pm.expect(pm.response.json()).to.be.an('array').that.is.empty;",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/posts"
+      }
+    }
+  ]
+}
